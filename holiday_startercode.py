@@ -28,7 +28,7 @@ class Holiday:
 # --------------------------------------------
 class Calendar:
     def __init__(self):
-        self.innerHoliday = {}
+        self.innerHoliday = []
 
    
     def addHoliday(self, holidayObj):
@@ -61,10 +61,10 @@ class Calendar:
         # remove the Holiday from innerHolidays
         # inform user you deleted the holiday
 
-    # def read_json(self, filelocation):
-    #     with open(filelocation, "r") as f:
-    #         for holiday in json.loads(f.read())["holidays"]:
-    #             self.addHoliday(Holiday(holiday["name"], datetime.date.fromisoformat(holiday["date"])))
+    def read_json(self, filelocation):
+        with open(filelocation, "r") as f:
+            for holiday in json.loads(f.read())["holidays"]:
+                self.addHoliday(Holiday(holiday["name"], datetime.date.fromisoformat(holiday["date"])))
         
 
 
@@ -79,37 +79,32 @@ class Calendar:
             json.dump(new_list, f, indent = 4)
         
     def scrapeHolidays(self, year):
-
         years = [year]
-        holiday_name_list = []
-        holiday_date_list = []
 
-        try: 
+        try:
 
             for year in years:
 
-                page = requests.get(f"https://www.timeanddate.com/holidays/us/{year}?hol=9564161").text
+                page = requests.get(f"https://www.timeanddate.com/calendar/custom.html?country=1&year={year}&hol=9564161")
 
-                soup = BeautifulSoup(page, "html.parser")
+                soup = BeautifulSoup(page.text, "html.parser")
 
-                site_holidays = soup.find("table", class_="table table--left table--inner-borders-rows table--full-width table--sticky table--holidaycountry")
+                table = soup.find('tbody')
 
+                rows = table.find_all('tr')
 
-                for row in site_holidays.find_all('a'):
-        
-                    holiday_name = row.text
-                    holiday_name_list.append(holiday_name)
-                    
-    
-                for row in site_holidays.find_all("th", class_="nw"):
+                row_count = 0
 
-                    holiday_date = f"{row.text}, {year}"
-                    formatted_date = datetime.strptime(holiday_date, '%b %d, %Y').date()
-                    # print(formatted_date.isocalendar().week)
-                    holiday_date_list.append(formatted_date)
-                    
-
-            # self.innerHoliday.append(Holiday(holiday_name_list, holiday_date_list))            
+                for item in rows:
+                    if not item.find('td', class_='cadjhol small pn'):
+                        row_count += 1
+                        if row_count > 2:
+                            hol_date = item.find('td')
+                            holiday_date = f'{hol_date.text}, {year}'
+                            formatted_date = datetime.strptime(holiday_date, '%b %d, %Y').date() 
+                            hol_name = item.find('a')
+                            holiday_name = hol_name.text
+                            self.innerHoliday.append(Holiday(holiday_name, formatted_date))            
 
         except:
             print("The website is currently having issues being reached.")
@@ -129,8 +124,7 @@ class Calendar:
         return len(self.innerHoliday)
     
     def filter_holidays_by_week(self, year, week):
-        query = list(filter(lambda x: x.date.week == week and x.date.year == year, self.innerHoliday))
-        print(query)
+        query = list(filter(lambda x: x.date.isocalendar().year == year and x.date.isocalendar().week == week, self.innerHoliday))
         return query
         # Use a Lambda function to filter by week number and save this as holidays, use the filter on innerHolidays
         # Week number is part of the the Datetime object
@@ -141,18 +135,43 @@ class Calendar:
         # Use your filter_holidays_by_week to get list of holidays within a week as a parameter
         # Output formated holidays in the week. 
         # * Remember to use the holiday __str__ method.
-        holiday_list = self.filter_holidays_by_week(year, week)
-        # if len(holiday_list) == 0:
-        #     print("No holidays this week.")
-        # else: 
-        #     for i in holiday_list:
-        #         print(holiday_list)
+
+        chosen_week = self.filter_holidays_by_week(year, week)
+        holiday_counter = 0
+        if len(chosen_week) == 0:
+            print("No holidays this week.")
+        else: 
+            for holiday in chosen_week:
+                print('\n')
+                print(chosen_week[holiday_counter])
+                holiday_counter += 1
 
 
 
 
     def getWeather(weekNum):
-        pass
+
+        url = "https://community-open-weather-map.p.rapidapi.com/forecast"
+
+        querystring = {"q":"minneapolis,us"}
+
+        headers = {
+            "X-RapidAPI-Host": "community-open-weather-map.p.rapidapi.com",
+            "X-RapidAPI-Key": "297eeab973mshfe84240f74c4444p18c747jsnb7c35ab4b990"
+        }
+
+        response = requests.request("GET", url, headers=headers, params=querystring)
+
+        weather = json.loads(response.text)
+        #
+        print(weather["list"][0])
+        counter = 0
+        for i in weather['list']:
+            if counter % 8 == 0:
+                x = i["weather"][0]["description"]
+                print(x)
+                print(i["dt_txt"])
+            counter += 1
         # Convert weekNum to range between two days
         # Use Try / Except to catch problems
         # Query API for weather in that week range
@@ -174,9 +193,11 @@ class Calendar:
 
 def main():
 
-    holiday_list = Calendar()
+    # holiday_list = Calendar()
     
     # holiday_list.read_json('holidays.json')
+
+
 
     # Large Pseudo Code steps
     # -------------------------------------
@@ -190,6 +211,9 @@ def main():
     # 7. Ask the User if they would like to Continue, if not, end the while loop, ending the program.  If they do wish to continue, keep the program going. 
     while True:
         
+        main_list = Calendar()
+        # main_list.read_json('holidays.json')
+
 
         # print("Welcome to the holiday manager.")
         # print("There are currently this many holidays in the system: " + str(holiday_list.numHolidays()))
@@ -217,12 +241,12 @@ def main():
         user_week = input("Please pick a week between 1-52. If you hit enter it will select he current week.\n")
 
         
+        holiday_dict = main_list.scrapeHolidays(user_year)
 
-        holiday_dict = holiday_list.scrapeHolidays(user_year)
+        chosen_holidays = main_list.displayHolidaysInWeek(int(user_year), int(user_week))
 
-        chosen_holidays = holiday_list.displayHolidaysInWeek(int(user_year), int(user_week))
 
-        print(chosen_holidays)
+     
 
         
 

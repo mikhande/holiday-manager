@@ -1,4 +1,4 @@
-Holiday Tracker Starter Code - you got this!!
+Holiday Tracker Starter Code -
 
 import datetime
 import json (there is already a started json file with a few holidays in it)
