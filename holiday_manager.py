@@ -32,9 +32,10 @@ class Calendar:
 
    
     def addHoliday(self, holidayObj):
-        if type(holidayObj) == Holiday: #is this ok?
+        print("you're in!")
+        if type(holidayObj): #is this ok?
            self.innerHoliday.append(holidayObj)
-           print("You've just added" + str(holidayObj))
+           print("You've just added " + str(holidayObj))
         else:
             print("That's not a valid input. Try again.")
             return
@@ -63,8 +64,12 @@ class Calendar:
 
     def read_json(self, filelocation):
         with open(filelocation, "r") as f:
-            for holiday in json.loads(f.read())["holidays"]:
-                self.addHoliday(Holiday(holiday["name"], datetime.date.fromisoformat(holiday["date"])))
+            data = json.load(f)
+            for i in data["holidays"]:
+                dateString = i["date"]
+                date_format = datetime.strptime(dateString, "%Y-%m-%d")
+                holiday = Holiday(i["name"], date_format)
+                self.innerHoliday.append(holiday)
         
 
 
@@ -147,6 +152,8 @@ class Calendar:
                 print('\n')
                 print(chosen_week[holiday_counter])
                 holiday_counter += 1
+                print("We will now go back to the main menu.")
+                print("=======================================")
 
 
 
@@ -197,10 +204,13 @@ class Calendar:
 def main():
 
     main_list = Calendar()
-    # main_list.scrapeHolidays()
+    # year = (2020,2021,2022,2023,2024)
+    # main_list.scrapeHolidays(year) # This isn't working to scrape holidays at beginning
+    main_list.read_json('holidays.json')
+  
     
-    # holiday_list.read_json('holidays.json')
-
+    
+    
 
 
     # Large Pseudo Code steps
@@ -217,10 +227,9 @@ def main():
         
         # main_list = Calendar()
         # main_list.read_json('holidays.json')
-
+        print(f"There are currently this many holidays in the system: {len(main_list.innerHoliday)}")
 
         print("Welcome to the holiday manager.")
-        print("There are currently this many holidays in the system: " + str(main_list.numHolidays()))
         print("===============================")
         print("Main Menu:")
         print("________________________________")
@@ -233,7 +242,12 @@ def main():
         menu_select = input("Please enter a number 1-5 corresponding to the menu: ")
         if menu_select == "1":
             print("You've chosen to add a holiday.")
-
+            holiday_name_input = input("please type the name of your holiday: ")
+            holiday_date_input = input("type the date. Ex: yyyy-mm-dd: ")
+            formatted_date = datetime.strptime(holiday_date_input, '%Y-%m-%d').date()
+            holidayObj = Holiday(holiday_name_input, formatted_date)
+            main_list.addHoliday(holidayObj)
+            
         elif menu_select == "2":
             print("Remove Holiday")
 
@@ -243,7 +257,7 @@ def main():
             user_year = input(f"Please pick a year between 2020 - 2024.\n")
             user_week = input("Please pick a week between 1-52. If you hit enter it will select the current week.\n")
             user_week = int(user_week)
-            if user_year in ['2020', '2021', '2022', '2024'] and user_week in range(1,52):
+            if user_year in ['2020', '2021', '2022', '2024'] and user_week in range(1,53):
 
                 holiday_dict = main_list.scrapeHolidays(user_year)
                 chosen_holidays = main_list.displayHolidaysInWeek(int(user_year), int(user_week))
