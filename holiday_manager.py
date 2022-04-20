@@ -10,6 +10,9 @@ class Holiday:
     name: str
     date: datetime.date
 
+    #def __init__(self, name, date):
+    #    self.date = datetime.strptime(date,'%Y-%m-%d')
+        
     def __str__(self):
         return self.name + " " + str(self.date)
 
@@ -59,12 +62,11 @@ class Calendar:
 
             data = []
             for i in self.innerHoliday:
-                new_list = {}
-                if i not in data and new_list:
-                    data.append({'name': i.name, 'date': datetime.strftime(i.date, "%Y-%m-%d")})
-                new_list.update({'holidays': data})
-                with open(filelocation, 'w') as f:
-                    json.dump(new_list, f, indent = 4)
+                type(i.date)
+                data.append({'name': i.name, 'date': i.date.strftime("%Y-%m-%d")})
+            
+            with open('holidays_out.json', 'w') as f:
+                json.dump(data, f, indent = 4)
         
     def scrapeHolidays(self):
         years = [2020,2021,2022,2023,2024]
@@ -196,7 +198,9 @@ def main():
             if holiday_date_input.isalpha():
                 print("That's not a valid input")
             else:
-                holidayObj = Holiday(holiday_name_input, holiday_date_input)
+                date_format = datetime.strptime(holiday_date_input, "%Y-%m-%d")
+                holidayObj = Holiday(holiday_name_input, date_format)
+                print(type(holidayObj.date))
                 main_list.addHoliday(holidayObj)
             
         elif menu_select == "2": #Remove holiday
