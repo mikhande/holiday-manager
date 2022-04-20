@@ -10,6 +10,9 @@ class Holiday:
     name: str
     date: datetime.date
 
+    #def __init__(self, name, date):
+    #    self.date = datetime.strptime(date,'%Y-%m-%d')
+        
     def __str__(self):
         return self.name + " " + str(self.date)
 
@@ -59,12 +62,11 @@ class Calendar:
 
             data = []
             for i in self.innerHoliday:
-                new_list = {}
-                if i not in data and new_list:
-                    data.append({'name': i.name, 'date': datetime.strftime(i.date, "%Y-%m-%d")})
-                new_list.update({'holidays': data})
-                with open(filelocation, 'w') as f:
-                    json.dump(new_list, f, indent = 4)
+                type(i.date)
+                data.append({'name': i.name, 'date': i.date.strftime("%Y-%m-%d")})
+            
+            with open('holidays_out.json', 'w') as f:
+                json.dump(data, f, indent = 4)
         
     def scrapeHolidays(self):
         years = [2020,2021,2022,2023,2024]
@@ -196,7 +198,9 @@ def main():
             if holiday_date_input.isalpha():
                 print("That's not a valid input")
             else:
-                holidayObj = Holiday(holiday_name_input, holiday_date_input)
+                date_format = datetime.strptime(holiday_date_input, "%Y-%m-%d")
+                holidayObj = Holiday(holiday_name_input, date_format)
+                print(type(holidayObj.date))
                 main_list.addHoliday(holidayObj)
             
         elif menu_select == "2": #Remove holiday
@@ -209,15 +213,15 @@ def main():
         elif menu_select == "3": #View holidays
             print("View Holidays") 
             print("================")
-            user_year = input(f"Please pick a year between 2020 - 2024.\n")
-            user_week = input("Please pick a week between 1-52. If you hit enter it will select the current week.\n")
-            if user_year in [2020,2021,2022,2023] and user_week in range(1,53):
+            user_year = int(input(f"Please pick a year between 2020 - 2024.\n"))
+            user_week = int(input("Please pick a week between 1-52. If you hit enter it will select the current week.\n"))
+            if user_year in [2020,2021,2022,2023] and (user_week) in list(range(1,53)):
                 main_list.displayHolidaysInWeek(int(user_year), int(user_week))
             elif user_week == "":
                 user_week = datetime.now().isocalendar()[1]
                 main_list.viewCurrentWeek(int(user_year), int(user_week))
             else:
-                print("That is not between 2020 and 2024 or the week is not between 1 and 52")
+                print(list(range(1,53)))
                 main()
 
         elif menu_select == "4": #Save changes to json
