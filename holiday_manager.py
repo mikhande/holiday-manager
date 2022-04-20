@@ -32,8 +32,7 @@ class Calendar:
 
    
     def addHoliday(self, holidayObj):
-        print("you're in!")
-        if type(holidayObj): #is this ok?
+        if type(holidayObj): 
            self.innerHoliday.append(holidayObj)
            print("You've just added " + str(holidayObj))
         else:
@@ -73,18 +72,18 @@ class Calendar:
         
 
 
-    def save_to_json(self, filelocation):
+    def save_to_json(self, filelocation): #Need to fix this function. giving error with trying to add datetime.
         # Write out json file to selected file.
         with open(filelocation, "w", encoding = 'utf-8') as f:
             data = []
             for i in self.innerHoliday:
                 new_list = {}
-                data.append({'Name': i.name, 'Date': i.date})
+                data.append({'Name': i.name, 'Date': i.date.strftime})
             new_list.update({'Holidays': data})
             json.dump(new_list, f, indent = 4)
         
-    def scrapeHolidays(self, year):
-        years = [year]
+    def scrapeHolidays(self):
+        years = [2020,2021,2022,2023,2024]
 
         try:
 
@@ -197,15 +196,16 @@ class Calendar:
         current_week = datetime.date.today()
 
     
-
+# def main_save():
+#     filelocation = 'holidays.json'
+    
 
 
 
 def main():
 
     main_list = Calendar()
-    # year = (2020,2021,2022,2023,2024)
-    # main_list.scrapeHolidays(year) # This isn't working to scrape holidays at beginning
+    main_list.scrapeHolidays() # This isn't working to scrape holidays at beginning
     main_list.read_json('holidays.json')
   
     
@@ -227,7 +227,7 @@ def main():
         
         # main_list = Calendar()
         # main_list.read_json('holidays.json')
-        print(f"There are currently this many holidays in the system: {len(main_list.innerHoliday)}")
+        print(f"There are currently this many holidays in the system: " + str(main_list.numHolidays()))
 
         print("Welcome to the holiday manager.")
         print("===============================")
@@ -265,10 +265,20 @@ def main():
                 print("That is not between 2020 and 2024 or the week is not between 1 and 52")
                 main()
         elif menu_select == "4":
-            print("Save Changes")
+            save_input = input("Are you sure you want to save your changes? [y/n]: ")
+            if save_input == "y":
+                main_list.save_to_json('holidays.json') #Save to json not working
+            elif save_input == "n":
+                print("You have selected not to save your input. You will return to the main menu.")
+                print("============================================================================")
+                main()
+            else:
+                print("That is not a valid input.")
+                main()
 
         elif menu_select == "5":
             print("Exit Program")
+            False
 
         else: 
             print("that's not one of the options.")
