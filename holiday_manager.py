@@ -213,15 +213,15 @@ def main():
         elif menu_select == "3": #View holidays
             print("View Holidays") 
             print("================")
-            user_year = input(f"Please pick a year between 2020 - 2024.\n")
-            user_week = input("Please pick a week between 1-52. If you hit enter it will select the current week.\n")
-            if user_year in [2020,2021,2022,2023] and user_week in range(1,53):
+            user_year = int(input(f"Please pick a year between 2020 - 2024.\n"))
+            user_week = int(input("Please pick a week between 1-52. If you hit enter it will select the current week.\n"))
+            if user_year in [2020,2021,2022,2023] and (user_week) in list(range(1,53)):
                 main_list.displayHolidaysInWeek(int(user_year), int(user_week))
             elif user_week == "":
                 user_week = datetime.now().isocalendar()[1]
                 main_list.viewCurrentWeek(int(user_year), int(user_week))
             else:
-                print("That is not between 2020 and 2024 or the week is not between 1 and 52")
+                print(list(range(1,53)))
                 main()
 
         elif menu_select == "4": #Save changes to json
