@@ -78,7 +78,7 @@ class Calendar:
             data = []
             for i in self.innerHoliday:
                 new_list = {}
-                data.append({'Name': i.name, 'Date': i.date.strftime})
+                data.append({'Name': i.name, 'Date': i.date.strftime('%Y-%m-%d')})
             new_list.update({'Holidays': data})
             json.dump(new_list, f, indent = 4)
         
