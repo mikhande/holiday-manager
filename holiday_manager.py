@@ -10,8 +10,8 @@ class Holiday:
     name: str
     date: datetime.date
 
-    # def __str__(self):
-    #     return self.name + " " + str(self.date)
+    def __str__(self):
+        return self.name + " " + str(self.date)
 
 
 class Calendar:
@@ -242,7 +242,7 @@ def main():
 
 
 
-
+main()
 
 
 
